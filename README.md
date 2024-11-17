@@ -46,60 +46,51 @@ Program to implement the multiple linear regression model for predicting car pri
 Developed by: Sanjushri A
 RegisterNumber: 21223040187
 '''
-# Importing necessary libraries
 import pandas as pd
-import numpy as np
-import statsmodels.api as sm
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
-import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
 
 # Load the dataset
-data = pd.read_csv("https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-ML240EN-SkillsNetwork/labs/data/CarPrice_Assignment.csv")
+file_path = '/mnt/data/encoded_car_data (1).csv'
+car_data = pd.read_csv(file_path)
 
-# Data preprocessing
-# Dropping unnecessary columns and handling categorical variables
-data = data.drop(['CarName', 'car_ID'], axis=1)
-data = pd.get_dummies(data, drop_first=True)
+# Prepare features (X) and target (y)
+X = car_data.drop(columns=['price'])  # All columns except 'price'
+y = car_data['price']  # Target variable
 
-# Splitting the data into features and target variable
-X = data.drop('price', axis=1)
-y = data['price']
-
-# Splitting the dataset into training and testing sets
+# Split the dataset into training and testing sets (80-20 split)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Creating the model
+# Initialize the Linear Regression model
 model = LinearRegression()
 
-# Fitting the model on the training data
+# Train the model on the training set
 model.fit(X_train, y_train)
 
-# Evaluating model performance using cross-validation
-cv_scores = cross_val_score(model, X, y, cv=5)
+# Evaluate the model using 5-fold cross-validation on the training set
+cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='neg_mean_squared_error')
+cv_mse = -cv_scores.mean()  # Convert to positive MSE
+cv_rmse = np.sqrt(cv_mse)  # Calculate Root Mean Squared Error (RMSE)
 
-# Printing cross-validation scores
-print("Cross-validation scores:", cv_scores)
-print("Mean cross-validation score:", cv_scores.mean())
+# Predict on the test set
+y_pred = model.predict(X_test)
 
-# Print model coefficients
-print("Intercept:", model.intercept_)
-print("Coefficients:", model.coef_)
+# Calculate performance metrics on the test set
+test_mse = mean_squared_error(y_test, y_pred)
+test_r2 = r2_score(y_test, y_pred)
 
-# Make predictions
-predictions = model.predict(X_test)
+# Print the results
+print("Cross-Validation RMSE: {:.2f}".format(cv_rmse))
+print("Test MSE: {:.2f}".format(test_mse))
+print("Test R² Score: {:.3f}".format(test_r2))
 
-# Visualizing actual vs predicted prices
-plt.scatter(y_test, predictions)
-plt.xlabel("Actual Prices")
-plt.ylabel("Predicted Prices")
-plt.title("Actual vs Predicted Prices")
-plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red')  # Perfect prediction line
-plt.show()
 ```
 
 ## Output:
-<img width="801" alt="Screenshot 2024-10-06 at 8 53 33 PM" src="https://github.com/user-attachments/assets/1a84f7be-ffb0-4073-b864-39555861f443">
+![image](https://github.com/user-attachments/assets/4ac0fd0b-c2db-4984-b942-d1b897d7db58)
+
 
 
 ## Result:
