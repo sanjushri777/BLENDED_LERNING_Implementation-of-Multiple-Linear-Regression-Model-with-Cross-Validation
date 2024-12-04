@@ -46,6 +46,11 @@ Program to implement the multiple linear regression model for predicting car pri
 Developed by: Sanjushri A
 RegisterNumber: 21223040187
 '''
+/*
+Program to implement the multiple linear regression model for predicting car prices with cross-validation.
+Developed by: Vishwaraj G.
+RegisterNumber: 212223220125
+*/
 import pandas as pd
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
@@ -53,38 +58,39 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
 # Load the dataset
-file_path = '/mnt/data/encoded_car_data (1).csv'
-car_data = pd.read_csv(file_path)
+file_path = 'encoded_car_data.csv'
+df = pd.read_csv(file_path)
 
-# Prepare features (X) and target (y)
-X = car_data.drop(columns=['price'])  # All columns except 'price'
-y = car_data['price']  # Target variable
+# Select relevant features and target variable
+X = df.drop(columns=['price'])  # All columns except 'price'
+y = df['price']  # Target variable
 
-# Split the dataset into training and testing sets (80-20 split)
+# Split the dataset (not strictly required for cross-validation, but good for validation outside cross-validation)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initialize the Linear Regression model
+# Train the Multiple Linear Regression model
 model = LinearRegression()
-
-# Train the model on the training set
 model.fit(X_train, y_train)
 
-# Evaluate the model using 5-fold cross-validation on the training set
-cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='neg_mean_squared_error')
-cv_mse = -cv_scores.mean()  # Convert to positive MSE
-cv_rmse = np.sqrt(cv_mse)  # Calculate Root Mean Squared Error (RMSE)
-
-# Predict on the test set
+# Evaluate on test set
 y_pred = model.predict(X_test)
+print("Test Set Evaluation:")
+print("Mean Squared Error (MSE):", mean_squared_error(y_test, y_pred))
+print("R-squared:", r2_score(y_test, y_pred))
 
-# Calculate performance metrics on the test set
-test_mse = mean_squared_error(y_test, y_pred)
-test_r2 = r2_score(y_test, y_pred)
+# Cross-Validation
+cv_scores = cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')  # 5-fold CV
+cv_mse = -cv_scores  # Convert negative MSE to positive
+print("\nCross-Validation Results:")
+print("MSE for each fold:", cv_mse)
+print("Mean MSE:", np.mean(cv_mse))
+print("Standard Deviation of MSE:", np.std(cv_mse))
 
-# Print the results
-print("Cross-Validation RMSE: {:.2f}".format(cv_rmse))
-print("Test MSE: {:.2f}".format(test_mse))
-print("Test R² Score: {:.3f}".format(test_r2))
+# Cross-Validation R-squared
+cv_r2_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+print("\nR-squared for each fold:", cv_r2_scores)
+print("Mean R-squared:", np.mean(cv_r2_scores))
+print("Standard Deviation of R-squared:", np.std(cv_r2_scores))
 
 ```
 
